@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% from "macro.html" import tool_bread with context %}
+{% block head %}
+    {{ super() }}
+    <style>
+
+    </style>
+{% endblock %}
+{% block title %}
+{{_('Image Process')}}
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            {{ tool_bread(_('Image Process'), _('Image Process')) }}
+            <div class="blog-content-brief-div p-3 mt-2">
+                <article>
+                    <p class="tool-title">{{ _('Tool Introduce') }}:</p>
+                    <ul>
+                        <li>{{ _('Image process tool base on opencv and PIL library;') }}</li>
+                        <li>{{ _('Currently contains functions such as image zooming, adding watermarks and changing the background of ID photos.') }}</li>
+                        <li>{{ _('Adding a watermark is recommended to choose the horizontal pavement, 45 ° pavement effect is better, the effect of other ways is not so good, because the coordinates of the watermark added by the watermark text length and font size is limited;') }}</li>
+                        <li>{{ _('Server performance is not possible, please do not upload the processed images too big!!!') }}</li>
+                    </ul>
+                    <p class="tool-title">{{ _('Tool-Using') }}:</p>
+                    <form id="upload" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select onclick="changeFunction()" id="proType" class="form-control">
+                                        <option>{{ _('Zoom') }}</option>
+                                        <option>{{ _('Add Watermark') }}</option>
+                                        <option>{{ _('Replace Background') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4"></div>
+                                <div class="col-md-4">
+                                    <div id="resizeDiv" class="row">
+                                        <div class="col">
+                                            <label>{{ _('Zoom Mode') }}:</label>
+                                            <select id="resizeType" class="form-control">
+                                                <option>{{ _('Zoom in') }}</option>
+                                                <option>{{ _('Zoom out') }}</option>
+                                            </select>
+                                        </div>
+                                        <div style="margin-bottom: 10px;" class="col">
+                                            <label>{{ _('Height Scaling') }}:</label>
+                                            <input class="form-control" id="heightZoom" type="number" placeholder="{{ _('Height Scaling') }}">
+                                            <label>{{ _('Width Scaling') }}:</label>
+                                            <input class="form-control" id="widthZoom" type="number" placeholder="{{ _('Width Scaling') }}">
+                                        </div>
+
+                                    </div>
+                                    <div hidden="hidden" id="markDiv" class="row">
+                                        <div style="margin-bottom: 10px;" class="col">
+                                            <label>{{ _('Font Color') }}:</label>
+                                            <select id="markFontColor" class="form-control">
+                                                <option>{{ _('Red') }}</option>
+                                                <option>{{ _('Blue') }}</option>
+                                                <option>{{ _('White') }}</option>
+                                                <option>{{ _('Black') }}</option>
+                                            </select>
+                                            <label>{{ _('Mark Position') }}:</label>
+                                            <select id="markPosition" class="form-control">
+                                                <option>{{ _('top-left') }}</option>
+                                                <option>{{ _('bottom-left') }}</option>
+                                                <option>{{ _('top-right') }}</option>
+                                                <option>{{ _('bottom-right') }}</option>
+                                                <option>{{ _('center') }}</option>
+                                                <option>{{ _('Horizontal spread') }}</option>
+                                                <option>{{ _('45° spread') }}</option>
+                                            </select>
+                                            <label>{{ _('Mark Word') }}:</label>
+                                            <input class="form-control" placeholder="{{ _('Input mark word') }}" id="markText">
+                                            <label>{{ _('Word Size') }}:</label>
+                                            <input class="form-control" type="number" placeholder="{{ _('Input word size') }}" id="textSize">
+                                        </div>
+                                    </div>
+                                    <div hidden="hidden" id="changeBackDiv" class="row">
+                                        <div style="margin-bottom: 10px;" class="col">
+                                            <label>{{ _('Background Color') }}:</label>
+                                            <select id="backType" class="form-control">
+                                                <option>{{ _('Blue') }}</option>
+                                                <option>{{ _('Red') }}</option>
+                                                <option>{{ _('White') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <input id="image" type="file">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <button class="btn btn-secondary float-right" onclick="imgProcess()">{{ _('Process') }}</button>
+                    <br>
+                    <br>
+                    <hr>
+                    <div hidden="hidden" id="imgProHint" class="text-center">
+                        <p><b><i class="fa fa-circle-o-notch fa-spin fa-fw"></i>{{ _('Processing...') }}</b></p>
+                    </div>
+                    <div hidden="hidden" id="resultDiv">
+                        <p>{{ _('Result') }}:</p>
+                        <div class="row">
+                            <div class="col-md-2"></div>
+                            <div style="margin-right: 20px;" class="col-md-4"><p>{{ _('Original Image') }}</p><img class="img-fluid" id="originImg">
+                            </div>
+                            <div class="col-md-4"><p>{{ _('Process Result') }}</p><img class="img-fluid" id="proImage"></div>
+                            <div class="col-md-2"></div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+    <script>
+        function changeFunction(){
+            let index = $("#proType").val();
+            if (index === '{{ _("Zoom") }}'){
+                $("#resizeDiv").removeAttr('hidden');
+                $("#markDiv").attr('hidden', 'hidden');
+                $("#changeBackDiv").attr('hidden', 'hidden');
+            }else if (index === '{{ _("Add Watermark") }}'){
+                $("#resizeDiv").attr('hidden', 'hidden');
+                $("#markDiv").removeAttr('hidden');
+                $("#changeBackDiv").attr('hidden', 'hidden');
+            }else {
+                $("#resizeDiv").attr('hidden', 'hidden');
+                $("#changeBackDiv").removeAttr('hidden');
+                $("#markDiv").attr('hidden', 'hidden');
+            }
+        }
+
+        function imgProcess(){
+            let proType = $("#proType").val();
+            let img = $("#image")[0].files[0];
+            if (img===undefined){
+                alert('{{ _('Please select a picture!') }}');
+                return false;
+            }
+            let formdata = new FormData();
+            formdata.append('image', img);
+            let resizeType = '';
+            let widthZoomNum = 0;
+            let heightZoomNum = 0;
+            let markText = '';
+            let markTextSize = 18;
+            let fontColor = '';
+            let markPosition = '';
+
+            if (proType === '{{ _("Zoom") }}'){
+                resizeType = $("#resizeType").val();
+                widthZoomNum = $("#heightZoom").val();
+                heightZoomNum = $("#heightZoom").val();
+                if (widthZoomNum === '' || heightZoomNum === ''){
+                    alert('{{ _('Please input scale ratio!') }}');
+                    return false;
+                }
+                if (resizeType === '{{ _("Zoom in") }}'){
+                    if (widthZoomNum <= 1 || heightZoomNum <= 1){
+                        alert('{{ _("Value must more than 1!") }}');
+                        return false;
+                    }
+                }else {
+                    if (widthZoomNum >=1 || heightZoomNum >=1){
+                        alert('{{ _("Value must less than 1!") }}');
+                        return false;
+                    }
+                }
+                formdata.append('widthZoom', widthZoomNum);
+                formdata.append('heightZoom', heightZoomNum);
+            }else if (proType==='{{ _("Add Watermark") }}'){
+                markText = $("#markText").val();
+                markTextSize = $("#textSize").val();
+                fontColor = $("#markFontColor").val();
+                markPosition = $("#markPosition").val();
+                if (markText === '' || markTextSize === ''){
+                    alert('{{ _("Please input watermark word and font size!") }}');
+                    return false;
+                }
+                formdata.append('markText', markText);
+                formdata.append('markTextSize', markTextSize);
+                formdata.append('markFontColor', fontColor);
+                formdata.append('markPosition', markPosition);
+
+            }else if (proType === '{{_("Replace Background")}}'){
+
+            }
+            formdata.append('proType', proType);
+            $("#imgProHint").removeAttr('hidden');
+            $.ajax({
+                url:'/tool/image-pro/',
+                type: 'post',
+                data: formdata,
+                processData: false,
+                contentType: false,
+                success: function (res){
+                    if (res.tag === 0){
+                        alert(res.info);
+                        $("#imgProHint").attr('hidden', 'hidden');
+                        return false;
+                    }
+                    $("#imgProHint").attr('hidden', 'hidden');
+                    $("#resultDiv").removeAttr('hidden');
+                    $("#originImg").attr('src', res.originPath);
+                    $("#proImage").attr('src', res.proPath);
+                }
+            })
+        }
+    </script>
+{% endblock %}

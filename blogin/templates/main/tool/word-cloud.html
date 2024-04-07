@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% from "macro.html" import tool_bread with context %}
+{% block head %}
+    {{ super() }}
+    <style>
+        #textarea {
+            padding: 8px;
+            height: 300px;
+            width: 100%;
+            min-height: 100%;
+            max-height: 100%;
+            border-radius: 5px;
+            outline: 0;
+            border: 1px solid #aaaaaa;
+            font-size: 13px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-user-modify: read-write-plaintext-only;
+        }
+        [contentEditable=true]:empty:not(:focus):before {
+            content: attr(data-text);
+        }
+    </style>
+{% endblock %}
+{% block title %}
+    词云图制作
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            {{ tool_bread('词云图制作', '词云图') }}
+            <div class="blog-content-brief-div p-3 mt-2">
+                <article>
+                    <p class="tool-title">工具说明:</p>
+                    <ul>
+                        <li>词云图制作工具是基于jieba分词库进行开发的，连接<a class="text-info-a" href="https://github.com/fxsjy/jieba">jieba分词</a></li>
+                        <li>通过直接载入文本，或者上传文本文件<b><i>(txt)</i></b>的方式进行词云图生成</li>
+                        <li>由于服务器的配置限制，上传的txt文件不要超过1.6M，否则服务器会出现内存溢出杀死进程!!!可怜~~</li>
+                    </ul>
+                    <p class="tool-title">工具使用:</p>
+                    <p class="text-muted">请选择下面一种方式进行操作，输入文本或者上传txt文件。</p>
+                    <div class="row">
+                        <div class="col-md-4 offset-2">
+                            <div id="textarea" contenteditable="true" data-text=""></div>
+                        </div>
+                        <div class="col-md-4">
+
+                            <label>文本:</label>
+                            <input type="file" id="txt"><br>
+
+                            <label>底片:</label>
+                            <input type="file" id="img">
+
+                            <label for="color">背景:</label>
+                            <input type="color" name="color" id="color"><span class="ml-3 p-1" id="colorVal">#000000</span><br>
+
+                            <label for="transparentColor">透明:</label>
+                            <input type="checkbox" name="transparent" id="transparentColor">
+                            <br>
+                            <span class="text-muted">Tip:</span>
+                            <ul>
+                                <li>优先使用txt文本作为分词内容</li>
+                                <li>底片为生成词云图的样式图片</li>
+                                <li>上传的txt文件需要为utf-8的编码格式</li>
+                            </ul>
+                        </div>
+                        <div class="col">
+                        </div>
+                    </div>
+                    <div style="text-align: right">
+                        <button class="btn btn-secondary" onclick="generateWordCloud()">生成词云图</button>
+                    </div>
+                    <hr>
+                    <div hidden="hidden" id="wcHint" class="text-center">
+                        <p><b><i class="fa fa-circle-o-notch fa-spin fa-fw"></i>正在生成词云图片,请稍后...</b></p>
+                    </div>
+                    <div id="resultDiv" hidden="hidden" class="no-results">
+                        <p class="tool-title">生成结果:</p>
+                        <div class="row">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-4 text-center">
+                                <label>原始图像:</label>
+                                <img id="originImg" data-toggle="modal" data-target="#bigImg" class="img-fluid">
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <label>词云图:</label>
+                                <img id="wcImg" class="img-fluid">
+                            </div>
+                            <div class="col-md-2"></div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="modal fade" id="bigImg" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="img">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img id="BigImg" class="img-fluid" src="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        function colorReverse(color){
+            let oldColorValue="0x"+color.replace(/#/g,"");
+            let str="000000"+(0xFFFFFF-oldColorValue).toString(16);
+            return "#" + str.substring(str.length-6,str.length);
+        }
+
+        $("#transparentColor").on('click', function (){
+            if (this.checked){
+                $("#color").attr('disabled', 'disabled');
+            }else {
+                $("#color").removeAttr('disabled');
+            }
+        })
+
+        $("#color").on('change', function (){
+            $("#colorVal").text($(this).val());
+            $("#colorVal").css('background-color', $(this).val());
+            $("#colorVal").css('color', colorReverse($(this).val()));
+        })
+
+        function generateWordCloud(){
+            let img = $("#img")[0].files[0];
+            let txt = $("#txt")[0].files[0];
+            let bg;
+            if ($("#transparentColor")[0].checked){
+                bg = 'None'
+            }else {
+                bg = $("#color").val();
+            }
+            let content = $("#textarea").text();
+            let data = new FormData()
+            if (img === undefined || (txt===undefined && content==='')){
+                alert('请输入关键信息~');
+                return false;
+            }
+            $("#wcHint").removeAttr('hidden');
+            if (txt === undefined){
+                data.append('tag', 0);
+                data.append('content', content);
+                data.append('img', img);
+                data.append('bg', bg);
+            }else {
+                data.append('tag', 1);
+                data.append('txt', txt);
+                data.append('img', img);
+                data.append('bg', bg);
+            }
+            $.ajax({
+                url:"/tool/word-cloud/",
+                type:"POST",
+                data: data,
+                processData: false,
+                contentType: false,
+                success: function (res){
+                    if (!res.tag){
+                        alert(res.info);
+                        $("#wcHint").attr('hidden', 'hidden');
+                        return false;
+                    }
+                    $("#resultDiv").removeAttr('hidden');
+                    $("#originImg").attr('src', res.originImg);
+                    $("#BigImg").attr('src', res.originImg);
+                    $("#wcImg").attr('src', res.wc);
+                    $("#wcHint").attr('hidden', 'hidden');
+                },
+                error: function (){}
+            })
+        }
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "backend/base.html" %}
+{% block title %}
+    编辑计划
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            {% include "_flash.html" %}
+            <div class="table-responsive">
+                {% if plans %}
+                    <div hidden="hidden" id="hintSaveSuccess" class="hint-div-right">
+                        <h5 id="hintText"><b><i class="fa fa-check"></i> 毒鸡汤制作成功!</b></h5>
+                    </div>
+                    <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>总进度</th>
+                        <th>已完成</th>
+                        <th>时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for plan in plans %}
+                        <tr>
+                            <td><i class="fa fa-tasks"></i> {{ plan.title }}</td>
+                            <td><input class="form-control" id="total{{ plan.id }}" type="number" value="{{ plan.total }}"></td>
+                            <td><input class="form-control" id="done{{ plan.id }}" type="number" value="{{ plan.done_count }}"> </td>
+                            <td>{{ plan.timestamps }}</td>
+                            <td>{{ plan.is_done }}</td>
+                            <td>
+                                {% if plan.is_done %}
+                                    <button class="btn btn-danger" style="margin-bottom: 3px;"><a title="完成" style="color: inherit; text-decoration: none;" href="{{ url_for('other_bp.plan_done_or_reboot', plan_id=plan.id) }}">
+                                        重启
+                                    </a></button>
+                                {% else %}
+                                    <button class="btn btn-success" style="margin-bottom: 3px;"><a title="完成" style="color: inherit; text-decoration: none;" href="{{ url_for('other_bp.plan_done_or_reboot', plan_id=plan.id) }}">
+                                        完成
+                                    </a></button>
+                                {% endif %}
+                                <button class="btn btn-info" id="{{ plan.id }}" onclick="saveEdit(this.id)" style="margin-bottom: 3px; display: none">保存</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        $('input').bind('input propertychange', function(){
+            // 监听输入框变化
+            if($(this).val()){
+                let btnID = this.id;
+                if (btnID.startsWith('total')){
+                    btnID = btnID.split('total')[1]
+                }else {
+                    btnID = btnID.split('done')[1]
+                }
+                $("#"+btnID).show();
+            }else{
+                console.log("不能清空信息!");
+            }
+        })
+
+        function saveEdit(id){
+            console.log('button id is ', id);
+            let total = $("#total"+id).val();
+            let done = $("#done"+id).val();
+            if (total === '' || done === ''){
+                alert('关键信息不能为空！');
+                return false;
+            }
+            console.log('发送保存信息!');
+            console.log(total);
+            console.log(done);
+            $.ajax({
+                url:"/backend/plan/content-edit/",
+                type: 'post',
+                data: {'total': total, 'done': done, 'id': id},
+                success: function (res){
+                    if (res.tag === 1){
+                        $("#hintText").text(res.info);
+                        $("#hintSaveSuccess").removeAttr("hidden");
+                        $("#hintSaveSuccess").show().delay(2000).hide(500);
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

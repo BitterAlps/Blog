@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "macro.html" import moment_card, photo_moment_card, render_pagination, profile_header with context %}
+{% block title %}
+    {{ current_user.username }}的个人主页
+{% endblock %}
+{% block content %}
+    {{ moment.locale(auto_detect=True) }}
+    <main>
+        <div class="container mt-3">
+            {% include "_flash.html" %}
+            {{ profile_header('index') }}
+            <div class="tab-content mv-2">
+                <!-- 动态栏 -->
+                <div id="moment" class="container tab-pane active"><br>
+                    <div style="margin-bottom: 20px">
+                        <ul class="nav nav-pills" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="pill" href="#blog">{{ _('Blog') }}博客</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="pill" href="#gallery">{{ _('Gallery') }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <!-- 博客评论动态 -->
+                        <div id="blog" class="tab-pane active">
+                            {% for comment in blogComments %}
+                                {{ moment_card(comment) }}
+                            {% endfor %}
+                        </div>
+                        <!-- 相册评论动态 -->
+                        <div id="gallery" class="tab-pane fade">
+                            {% for comment in photoComments %}
+                                {{ photo_moment_card(comment) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

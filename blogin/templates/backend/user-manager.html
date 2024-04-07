@@ -1,0 +1,103 @@
+{% extends "backend/base.html" %}
+{% from "macro.html" import render_pagination, dropmenu with context %}
+{% block head %}
+    {{ super() }}
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+{% endblock %}
+{% block title %}
+    用户管理
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            {% include "_flash.html" %}
+            <h3><b>用户管理</b></h3>
+            <hr>
+            <div style="text-align: right; margin-right: 15px;">
+                {{ render_pagination(pagination) }}
+            </div>
+            <div class="table-responsive" style="padding-bottom: 25px">
+                {% if users %}
+                    <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>头像</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>加入时间</th>
+                        <th>最近登录</th>
+                        <th>状态</th>
+                        <th>邮箱确认</th>
+                        <th>注册方式</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td><i class="fa fa-user"></i> {{ user.username }}</td>
+                            <td><img alt="{{ user.username }}" style="height: 50px;width: 50px;"
+                                     src="{{ user.avatar }}"></td>
+                            <td><i class="fa fa-envelope-o"></i> {{ user.email }}</td>
+                            <td><i class="fa fa-tag"></i> {{ user.roles.name }}</td>
+                            <td><i class="fa fa-calendar"></i> {{ user.create_time }}</td>
+                            <td><i class="fa fa-clock-o"></i> {{ user.recent_login }}</td>
+                            <td>
+                                {% if user.statuses.id == 1 %}
+                                    <span class="label label-success"><i
+                                            class="fa fa-star"></i> {{ user.statuses.name }}</span>
+                                {% else %}
+                                    <span class="label label-danger"> <i
+                                            class="fa fa-remove"></i> {{ user.statuses.name }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.confirm == 0 %}
+                                    <span class="label label-warning">未确认</span>
+                                {% else %}
+                                    <span class="label label-success">已确认</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="label label-info">{{ user.third_party.name }}</span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        操作
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                                        <li>{% if user.role_id == 1 %}
+                                            <a class="dropdown-item"
+                                               href="/backend/interactive/set-user/{{ user.id }}/">用户</a>
+                                        {% else %}
+                                            <a class="dropdown-item"
+                                               href="/backend/interactive/set-admin/{{ user.id }}/">管理员</a>
+                                        {% endif %}</li>
+                                        <li>{% if user.statuses.id == 1 %}
+                                            <a class="dropdown-item"
+                                               href="/backend/interactive/lock/{{ user.id }}/">禁用</a>
+                                        {% else %}
+                                            <a class="dropdown-item" href="/backend/interactive/unlock/{{ user.id }}/">解除</a>
+                                        {% endif %}</li>
+                                        <li><a class="dropdown-item" onclick="return confirm('你确定要入库该版本么?');"
+                                               href="{{ url_for('user_m_bp.reset_user_password', user_id=user.id) }}">重置密码</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+                </table>
+            </div>
+            <div style="text-align: right; margin-right: 15px;">
+                {{ render_pagination(pagination) }}
+            </div>
+        </div>
+    </main>
+{% endblock %}

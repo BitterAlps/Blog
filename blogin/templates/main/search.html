@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from 'macro.html' import photo_card, blog_card, poem_slider with context %}
+{% block title %}
+    搜索结果
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            <br>
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+                        <div class="list-group">
+                            <a {% if category == 'blog' %}style="color: #20c997"{% endif %} class="list-group-item text-info-a" href="{{ url_for('.search', q=q, category='blog') }}"><i class="fa fa-book fa-fw" aria-hidden="true"></i>&nbsp; 博客</a>
+                            <a {% if category == 'photo' %}style="color: #20c997"{% endif %} class="list-group-item text-info-a" href="{{ url_for('.search', q=q, category='photo') }}"><i class="fa fa-image fa-fw" aria-hidden="true"></i>&nbsp; 相册</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    {% if results %}
+                        <h5>{{ results|length }} 个结果</h5>
+                        {% for item in results %}
+                            {% if category == 'photo' %}
+                                {{ photo_card(item) }}
+                            {% elif category == 'blog' %}
+                                {{ blog_card(item) }}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <h5 class="tip">没有找到.</h5>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+{% endblock %}

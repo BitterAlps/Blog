@@ -1,0 +1,156 @@
+{% extends "backend/base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block head %}
+    {{super()}}
+    <style>
+        @media screen and (min-width: 1367px){
+            .draft-fixed-div {
+                position: fixed;
+                top: 8.5em;
+                user-select: none;
+                left: calc((100vw - 1000px)/2 - 400px);
+                margin: 5px;
+                padding: 10px;
+                border-radius: 5px;
+                background: rgb(239 239 239 / 0.3);
+                width: 20em;
+            }
+        }
+    </style>
+{% endblock %}
+{% block title %}创建博客{% endblock %}
+{%block content%}
+    <body>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div class="container">
+        <div class="draft-fixed-div">
+            <h5><b>当前草稿</b></h5>
+            <ul id="drafts">
+                {% for d in drafts %}
+                    <li id="li{{ d.id }}"><a href="/backend/admin/blog/create/?draft-id={{ d.id }}">{{ d.title }}</a><a title="删除草稿" id="{{ d.id }}" onclick="showConfirm(this.id)" class="btn btn-sm">×</a></li>
+                {% endfor %}
+            </ul>
+            <div class="text-right">
+                <button data-id="{{ draft_id }}" id="saveDraftBtn" onclick="saveDraft($(this).data('id'), 2)" class="btn btn-success">保存草稿</button>
+            </div>
+        </div>
+        {% for message in get_flashed_messages(with_categories=True) %}
+            <div style="margin-top: 5px" class="alert alert-{{ message[0] }}">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message[1] }}
+            </div>
+        {% endfor %}
+        <form method="post" enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            {{wtf.form_field(form.title)}}
+            <div class="row">
+                <div class="col-md-2">
+                    {{wtf.form_field(form.blog_type)}}
+                </div>
+                <div class="col-md-2">
+                    {{wtf.form_field(form.blog_level)}}
+                </div>
+                <div class="col-md-2">
+                    {{wtf.form_field(form.blog_img_file)}}
+                </div>
+            </div>
+            {{wtf.form_field(form.brief_content)}}<br>
+            {{ form.body }}<br>
+            <div class="row">
+                <div class="col-md-10"></div>
+                <div class="col-md-2" style="text-align: right;">
+                    {{ wtf.form_field(form.submit, class="btn btn-info") }}
+                </div>
+            </div>
+        </form>
+    </div>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='body') }}
+    <br>
+    <script>
+        function showConfirm(did){
+            let r = confirm('确认删除该草稿吗?');
+            if (r!==true){
+                return false;
+            }else {
+                $.ajax({
+                    url: '/backend/delete-draft/',
+                    type: 'post',
+                    data:{'did': did},
+                    success: function (){
+                        $("#li"+did).remove();
+                    }
+                })
+            }
+        }
+
+        $(function () {
+            $(document).ready(function () {
+                let tag = 1
+                setInterval(function (){
+                    let did = $("#saveDraftBtn").data('id')
+                    saveDraft(did, tag)
+                }, 30*1000)
+            });
+        })
+
+        CKEDITOR.on( 'instanceReady', function( evt ) {
+            evt.editor.dataProcessor.htmlFilter.addRules( {
+                elements: {
+                    img: function(el) {
+                        el.addClass('img-fluid d-block mx-auto pic');
+                    },
+                    table: function (el){
+                        el.addClass('table table-responsive');
+                    },
+                    thead: function (el){
+                        el.addClass('thead-light');
+                    },
+                    blockquote: function (el){
+                        el.addClass('m-blockquote');
+                    },
+                    div: function (el){
+                        el.addClass('m-block-text')
+                    }
+                }
+            });
+        });
+
+        function saveDraft(did, tag){
+            let title = $("#title").val();
+            let brief = $("#brief_content").val();
+            let content = CKEDITOR.instances.body.getData();
+            if (title === '' && brief === '' && content === ''){
+                if (tag === 2){
+                    Swal.fire({
+                        title: '提示',
+                        text: '请填写内容后再保存草稿!',
+                        icon: 'warning',
+                        confirmButtonText: '确定'
+                    });
+                }
+                return false;
+            }
+            $.ajax({
+                url: '/backend/save-draft/',
+                type: 'post',
+                data: {'did': did, 'brief': brief, 'content': content, 'title': title},
+                success: function (res){
+                    if (res.tag === 1){
+                        $("#saveDraftBtn").data('id', res.draft_id)
+                        $("#saveDraftBtn").attr('data-id', res.draft_id)
+                        if (tag === 2){
+                            alert(res.info);
+                        }
+                    }else {
+                        if (tag === 2){
+                            alert('保存草稿失败!');
+                        }
+                    }
+                }
+            })
+        }
+    </script>
+    </body>
+{% endblock %}

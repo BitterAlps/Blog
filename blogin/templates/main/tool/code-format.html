@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "macro.html" import tool_bread, toast with context %}
+{% block title %}
+    {{ _('Code Format') }}
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            {{ tool_bread(_("Code Format"), _("Code Format")) }}
+            <div class="blog-content-brief-div p-3 mt-2">
+                <label>{{_('Program')}}:
+                    <select id="language" class="form-control">
+                        <option>JSON</option>
+                        <option>HTML</option>
+                        <option>Python</option>
+                    </select>
+                </label>
+                <label>{{_('Indent')}}:
+                    <select id="indent" class="form-control">
+                        <option value="2">{{ _('Two Space')}}</option>
+                        <option value="4">{{ _('Four Space') }}</option>
+                    </select>
+                </label>
+                <label>{{ _('API') }}:
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="interface" id="interface" placeholder="{{ _('Input API URL') }}" aria-required="true" aria-describedby="captcha" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-info" onclick="getInterfaceData()" id="sendCaptcha">{{_('Get')}}</button>
+                        </div>
+                    </div>
+                </label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <textarea id="originCode" class="code-format-textarea"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <textarea id="formatCode" class="code-format-textarea"></textarea>
+                    </div>
+                </div>
+                {{ toast() }}
+                <div class="d-flex">
+                    <button class="btn btn-sm btn-outline-info mr-2" onclick="formatCode()">{{_('Format')}}</button>
+                    <button class="btn btn-sm btn-outline-success mr-2" onclick="copyFormatCode()">{{ _('Copy') }}</button>
+                    <button class="btn btn-sm btn-outline-danger mr-2" onclick="clearResult()">{{ _('Clear') }}</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        function formatCode(){
+            let code = $("#originCode").val();
+            let language = $("#language").val();
+            let indent = $("#indent").val();
+            $.ajax({
+                url: '/tool/code-format/',
+                type: 'post',
+                data: {'indent': indent, 'language': language, 'code': code},
+                success: function (res){
+                    if (res.tag === 1){
+                        $("#formatCode").empty();
+                        $("#formatCode").val(res.code);
+                        showToast("{{ _('Format successful!') }}", 1500);
+                    }else {
+                        showToast(res.info, 1500);
+                    }
+                }
+            })
+        }
+
+        function copyFormatCode(){
+            let e = document.getElementById("formatCode");
+            e.select();
+            document.execCommand("Copy");
+            showToast('{{ _("Copy successful!") }}!', 1000);
+        }
+
+        function clearResult(){
+            $("#originCode").val('');
+            $("#formatCode").val('');
+        }
+
+        function getInterfaceData(){
+            let itf = $("#interface").val();
+            if (itf === ''){
+                showToast('{{ _('API URL is empty!') }}!', 1500);
+                return false;
+            }
+            $.ajax({
+                url: '/tool/get-itf-data/',
+                type: 'post',
+                data: {'itf': itf},
+                success: function (res){
+                    if (res.tag === 1){
+                        $("#originCode").val('');
+                        $("#originCode").val(res.code.toString());
+                        showToast('{{ _('Get data successful!') }}!', 1500);
+                    }else
+                        showToast(res.code, 1500);
+                }
+            })
+        }
+    </script>
+{% endblock %}

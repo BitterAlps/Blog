@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <style>
+        ul.timeline {
+            list-style-type: none;
+            position: relative;
+            padding-inline-start: 40px;
+        }
+
+        ul.timeline:before {
+            content: ' ';
+            background: #d4d9df;
+            display: inline-block;
+            position: absolute;
+            left: 29px;
+            width: 2px;
+            height: 100%;
+            z-index: 400;
+        }
+
+        ul.timeline > li {
+            padding-left: 20px;
+            padding-bottom: 20px;
+        }
+
+        ul.timeline > li:before {
+            content: ' ';
+            background: white;
+            display: inline-block;
+            position: absolute;
+            border: 3px solid #157186;
+            left: 20px;
+            width: 20px;
+            height: 20px;
+            z-index: 400;
+        }
+
+        ul.timeline-items {
+            padding-left: 20px;
+            list-style-type: square;
+        }
+
+        ul.timeline-items > li {
+            padding: 5px 0;
+        }
+
+        h4 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: .25px;
+            margin-top: 0;
+        }
+
+        h4 {
+            display: block;
+            margin-block-start: -0.67em;
+            margin-inline-start: 7px;
+            margin-inline-end: 0px;
+            font-weight: bold;
+        }
+
+    </style>
+
+{% endblock %}
+{% block title %}
+    {{ _('Post Archive') }}
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container mt-2">
+            {% include "_flash.html" %}
+            <div class="row">
+                <div class="col-lg-8 mb-2">
+                    <div class="card-body f-16 archive blog-content-brief-div">
+                        <ul class="pl-4 timeline">
+                            {% for year in archives.keys() %}
+                                <li class="timeline-items"><h4>{{ year }}</h4>
+                                    {% for month in archives.get(year).keys() %}
+                                        <ul class="pl-4">
+                                            <li style="list-style-type: none"><b>{{ month }} 月
+                                                (共 {{ archives[year][month]|length }} 篇)</b>
+                                                <ul class="pl-4">
+                                                    {% for blog in archives[year][month] %}
+                                                        <li class="timeline-items">&nbsp;&nbsp;
+                                                            <a class="text-decoration-none"
+                                                               href="/blog/article/{{ blog[0] }}">{{ blog[2] }} {{ blog[1] }}</a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    {% endfor %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    {% include "slider.html" %}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

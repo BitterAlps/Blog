@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "macro.html" import tool_card with context %}
+{% block head %}
+    {{ super() }}
+    <style>
+        .tool-des{
+            height: 10rem;
+        }
+
+        .tool:hover {
+            transform: scale(1.02);
+        }
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Online Tools') }}
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container">
+            <br>
+            <div class="row">
+                {{ tool_card(_('OCR'), _('Online OCR tools are based on Baidu AI platform interface developed, 50,000 times a day for free calls, if the recognition failure must be because the blogger poor, free daily number was used up.'), "ocr", "fa fa-image") }}
+                {{ tool_card(_('IP Query'), _('The IP query tool is based on the ipfree interface for querying. Due to the external network source used, the query time may be a bit slow or timed out.'), "query-ip", "fa fa-address-card") }}
+                {{ tool_card(_('WordCloud'), _('Word cloud map is a popular visualization tool at present. This tool realizes word cloud map creation through jieba library, save and download.'), 'word-cloud', "fa fa-cloud") }}
+                {{ tool_card(_('Multi Translate'), _('The multi-terminal translation tool integrates multiple translation interfaces, including Baidu, Youdao, Google, etc., and multiple results for one text.'), 'multi-translation', "fa fa-language") }}
+                {{ tool_card(_('Image Process'), _('Image processing tools can mainly do some simple operations on images, such as cropping, scaling, adding text, etc. The functions are relatively simple.'), 'image-pro', "fa fa-photo") }}
+{#                {{ tool_card(_('ShiCi Query'), _('Contains 320,000 Tang and Song poems and 150,000 Song poems, thanks to the contributors of the chinese-poem repository on github.'), 'poem-tang', "fa fa-file-o") }}#}
+                {{ tool_card(_('Code Format'), _('Format messy code for formatted output, such as json data, HTML code, etc.'), 'code-format', "fa fa-code") }}
+            </div>
+        </div>
+    </main>
+{% endblock %}

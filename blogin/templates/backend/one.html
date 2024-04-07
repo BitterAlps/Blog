@@ -1,0 +1,38 @@
+{% extends "backend/base.html" %}
+{% from "macro.html" import render_pagination with context %}
+
+{% block title %}
+    一句话
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="container mt-2">
+            <div class="table-responsive">
+                {% if ones %}
+                    <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>内容</th>
+                        <th>日期</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for one in ones %}
+                        <tr>
+                            <td> {{ (page - 1) * 20 + loop.index }}</td>
+                            <td> {{ one.content }}</td>
+                            <td> {{ one.day }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+                </table>
+                <div class="text-right mt-2">
+                    {{ render_pagination(pagination) }}
+                </div>
+            </div>
+        </div>
+
+    </main>
+{% endblock %}

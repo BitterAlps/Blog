@@ -1,0 +1,316 @@
+<!--suppress ALL -->
+<div class="card mb-3">
+    <div class="card-header p-2 f-17">
+        <div class="d-flex">
+            <b class="flex-grow-1"><i class="fa fa-coffee" aria-hidden="true"></i> {{ _('One') }}</b>
+            {% if  request.cookies.get('blog_theme', 'light') == 'light' %}
+                <a style="margin-bottom: 0px" href="{{ url_for('blog_bp.change_theme', theme_name='dark') }}"><i
+                        class="fa fa-moon-o"></i></a>
+            {% else %}
+                <a style="margin-bottom: 0px" href="{{ url_for('blog_bp.change_theme', theme_name='light') }}"><i
+                        class="fa fa-sun-o"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    <div id="oneWord" class="card-body p-2 f-15">
+        <!-- <i class="fa fa-spinner fa-spin f-hint"></i> -->
+        <p class="mb-1">每日一句</p>
+    </div>
+</div>
+
+<!-- github卡片 -->
+<div class="card mb-3 mt-2">
+    <div class="card-header p-2 f-17">
+        <strong><i class="fa fa-github"></i> Github</strong>
+    </div>
+    <div class="card-body p-2 f-15">
+        <div id="github-card">
+            <div style="border-bottom: 1px solid rgba(58,10,10,0.19); margin-bottom: 5px;padding-bottom: 3px;"
+                 class="d-flex">
+                <a href="https://github.com/BitterAlps/" target="_blank"><img class="avatar-s" id="githubAvatar"
+                                                                                alt="avatar"
+                                                                                src="{{ url_for('static', filename='github-avatar.png') }}"></a>
+                <div class="ml-2">
+                    <h5 class="mb-0"><b>Blogin</b></h5>
+                </div>
+                <a class="btn btn-sm btn-light h-25" id="githubStar" hidden="hidden"
+                   href="https://github.com/BitterAlps/Blogin" target="_blank">Star</a>
+            </div>
+            <div id="shield-svg" class="text-left pr-1">
+                <p class="mb-1 d-block">shield</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 近期计划卡片 -->
+<div class="card mb-3 mt-2">
+    <div class="card-header p-2 f-17">
+        <strong><i class="fa fa-tasks"></i> {{ _('TODO') }}</strong>
+    </div>
+    <div class="card-body p-2 f-15">
+        {% if not plans %}
+            <div class="text-center"><p class="text-muted"><b>{{ _('No Plan!') }}</b></p>
+            </div>
+        {% endif %}
+        {% for plan in plans %}
+            <p style="margin-bottom: 2px">{{ plan.title }}</p>
+            <div class="progress" title="计划周期{{ plan.total }},已完成{{ plan.done_count }}" style="height: 10px">
+                <div class="progress-bar bg-info" style="width:{{ (plan.done_count /(1 if plan.total == 0 else plan.total)) * 100 }}%"></div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 最近动态卡片 -->
+{#<div class="card mb-3 mt-2">#}
+{#    <div class="card-header p-2 f-17">#}
+{#        <strong><i class="fa fa-github"></i> {{ _('Activity') }}</strong>#}
+{#    </div>#}
+{#    <div class="card-body p-2 f-15">#}
+{#        <div style="width:100%;height:130px;" id="contribute" class="row text-center">#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
+<!-- 博客分类 -->
+<div class="card mb-3 mt-2">
+    <div class="card-header p-2 f-17">
+        <strong><i class="fa fa-book"></i> {{ _('Category') }}</strong>
+    </div>
+    <ul class="list-group list-group-flush f-16">
+        {% for category in categories %}
+            <li class="list-group-item d-flex justify-content-between align-items-center pr-2 py-2">
+                <a style="text-decoration: none" class="text-info-a" href="/blog/cate/{{ category.id }}/"
+                   title="查看{{ category.name }}下所有文章">{{ category.name }}</a>
+                <span class="badge badge-pill badge-success"
+                      title="当前分类下有{{ category.blogs|count }}篇文章">{{ category.blogs|count }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- 留言板 -->
+<div class="card mb-3 mt-2">
+    <div class="card-header p-2 f-17">
+        <div class="d-flex">
+            <b class="flex-grow-1"><i class="fa fa-weixin" aria-hidden="true"></i> {{ _("Message Board") }}</b>
+            <a style="margin-bottom: 0px" class="text-decoration-none"
+               href="{{ url_for('msg_border_bp.index') }}"><small>{{ _('More') }}</small><i class="fa fa-angle-double-right"></i></a>
+        </div>
+    </div>
+    <div class="card-body pl-3">
+        {% for msg in msg_borders %}
+            <p class="mb-1">{{ msg.msg_user.username }}: {{ msg.plain_text|truncate(15) }}</p>
+        {% endfor %}
+    </div>
+</div>
+<!-- 友情链接 -->
+<div class="card mb-3 mt-2">
+    <div class="card-header p-2 f-17">
+        <strong><i class="fa fa-link"></i> {{ _("Links") }}</strong>
+    </div>
+    <div class="card-body px-0 py-3">
+        <div class="tool-list">
+            {% for flink in flinks %}
+                <div class="w-50 float-left text-center mb-2">
+                    <div class="mx-2">
+                        <a class="text-info-a" style="text-decoration: none" href="{{ flink.link }}"
+                           title="{{ flink.desc }}" target="_blank">
+                            {{ flink.name }}</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{#<div class="card mb-3 mt-2">#}
+{#    <div class="card-header p-2 f-17">#}
+{#        <strong><i class="fa fa-paper-plane"></i> {{ _("Poster") }}</strong>#}
+{#    </div>#}
+{#    <div class="card-body p-2 f-15">#}
+{#        <div class="row text-center">#}
+{#            <div class="col">#}
+{#                <a class="text-info-a" href="https://passport.ucloud.cn/?invitation_code=C1xC968B3780B59"#}
+{#                   target="_blank" title="ucloud云主机">#}
+{#                    <img style="max-width:40px" alt="ucloud云主机"#}
+{#                         src="{{ url_for('static', filename='/img/tg/ucloud-icon.png') }}">#}
+{#                    <p class="mt-2">ucloud云</p>#}
+{#                </a>#}
+{#            </div>#}
+{#            <div class="col">#}
+{#                <a class="text-info-a"#}
+{#                   href="https://www.ucloud.cn/site/active/kuaijie.html?invitation_code=C1xC968B3780B59" target="_blank"#}
+{#                   title="ucloud云主机促销活动">#}
+{#                    <img style="max-width:40px" alt="ucloud云主机促销活动"#}
+{#                         src="{{ url_for('static', filename='/img/tg/ucloud-icon.png') }}">#}
+{#                    <p class="mt-2">云主机促销</p>#}
+{#                </a>#}
+{#            </div>#}
+{#            <div class="col">#}
+{#                <a class="text-info-a"#}
+{#                   href="https://cloud.tencent.com/act/cps/redirect?redirect=33867&cps_key=fe0e7fca4790ebfb4c2f21565cdb3ce1&from=activity"#}
+{#                   target="_blank" title="腾讯云主机促销活动">#}
+{#                    <img style="max-width:40px" alt="腾讯云主机促销活动"#}
+{#                         src="{{ url_for('static', filename='/img/tg/ucloud-icon.png') }}">#}
+{#                    <p class="mt-2">腾讯云促销</p>#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+<script src="{{ url_for('static', filename='js/jquery.cookies.js') }}"></script>
+<script>
+    let theme = $.cookie('blog_theme');
+    // load slider infomation
+    $(function () {
+        $(document).ready(function () {
+            loadOne();
+            loadGithub();
+        });
+    })
+
+    // get one sentence and github repository information
+    function loadOne() {
+        var instance = $('#oneWord').scheletrone({
+            url: "/load-one/",
+        });
+
+
+    }
+
+    function loadGithub() {
+        let instance = $("#github-card").scheletrone({
+            url: '/load-github/',
+            method: 'post',
+            ajaxData: {'theme': theme}
+        })
+        /*$.ajax({
+            type: 'post',
+            url: '/load-github/',
+            data: {'theme': theme},
+            success: function (res) {
+                $(".f-hint").hide();
+                $("#shield-svg").append('<div class="mr-1">' + res.star + '</div>');
+                $("#shield-svg").append('<div class="mr-1">' + res.fork + '</div>');
+                $("#shield-svg").append('<div class="mr-1">' + res.watcher + '</div>');
+                $('#repoDesc').text(res.repo_desc);
+                $("#githubAvatar").attr('src', res.avatar);
+                $("#githubStar").attr('hidden', false);
+            }
+        })*/
+    }
+
+    {#var myChart = echarts.init(document.getElementById('contribute'));#}
+    {#myChart.on('click', function (params) {#}
+    {#    window.open('https://2dogz.cn/');#}
+    {# })#}
+    {#$.ajax({#}
+    {#    url: '/get-contribution/',#}
+    {#    type: 'post',#}
+    {#    success: function (response) {#}
+    {#        generateCalendar(response);#}
+    {#    }#}
+    {# })#}
+
+    {#function generateCalendar(data) {#}
+    {#    let item0Color = null;#}
+    {#    let bgColor = null;#}
+    {#    let borderColor = null;#}
+    {#    // define heat map theme with user theme#}
+    {#    if (theme === 'light' || theme === undefined) {#}
+    {#        item0Color = '#EBEDF0';#}
+    {#        bgColor = '#ffffff';#}
+    {#        borderColor = '#ffffff';#}
+    {#    } else {#}
+    {#        item0Color = '#444444';#}
+    {#        bgColor = '#303030';#}
+    {#        borderColor = '#303030';#}
+    {#    }#}
+    {#    let option = {#}
+    {#        title: {#}
+    {#            top: 30,#}
+    {#            left: 'center',#}
+    {#        },#}
+    {#        tooltip: {#}
+    {#            position: 'top',#}
+    {#            backgroundColor: '#000000',#}
+    {#            formatter: function (p) {#}
+    {#                let format = echarts.format.formatTime('yyyy-MM-dd', p.data[0]);#}
+    {#                return '<i class="fa fa-fire"></i> 在' + format + '有' + p.data[1] + '次活动';#}
+    {#            }#}
+    {#        },#}
+    {#        visualMap: {#}
+    {#            textStyle: {#}
+    {#                color: '#B9B8CE',#}
+    {#                fontFamily: 'sans-serif',#}
+    {#                fontSize: 12,#}
+    {#                fontStyle: 'normal',#}
+    {#                fontWeight: 'normal'#}
+    {#            },#}
+    {#            show: false,#}
+    {#            min: 0,#}
+    {#            max: 10,#}
+    {#            type: 'piecewise',#}
+    {#            pieces: [#}
+    {#                {#}
+    {#                    gt: 10,#}
+    {#                    color: '#2E6139',#}
+    {#                    label: '>10'#}
+    {#                },#}
+    {#                {#}
+    {#                    gt: 5,#}
+    {#                    lte: 10,#}
+    {#                    color: '#30A14E',#}
+    {#                    label: '5-10'#}
+    {#                },#}
+    {#                {#}
+    {#                    gt: 2,#}
+    {#                    lte: 5,#}
+    {#                    color: '#40C463',#}
+    {#                    label: '2-5'#}
+    {#                },#}
+    {#                {#}
+    {#                    gt: 0,#}
+    {#                    lte: 2,#}
+    {#                    color: '#9BE9A8',#}
+    {#                    label: '0-2'#}
+    {#                },#}
+    {#                {#}
+    {#                    value: 0,#}
+    {#                    color: item0Color,#}
+    {#                    label: '0'#}
+    {#                }#}
+    {#            ]#}
+    {#        },#}
+    {#        calendar: [{#}
+    {#            left: 80,#}
+    {#            top: 20,#}
+    {#            center: true,#}
+    {#            range: [data.start, data.end],#}
+    {#            splitLine: {#}
+    {#                show: false,#}
+    {#            },#}
+    {#            itemStyle: {#}
+    {#                color: bgColor,#}
+    {#                borderColor: borderColor,#}
+    {#                borderWidth: 3,#}
+    {#                borderType: 'solid',#}
+    {#            },#}
+    {#            cellSize: [15, 15]#}
+    {#        }],#}
+    {#        series: {#}
+    {#            type: 'heatmap',#}
+    {#            coordinateSystem: 'calendar',#}
+    {#            data: data.data,#}
+    {#            itemStyle: {#}
+    {#                color: '#aaeecc'#}
+    {#            }#}
+    {#        }#}
+    {#    };#}
+    {#    myChart.setOption(option);#}
+    {# }#}
+
+</script>

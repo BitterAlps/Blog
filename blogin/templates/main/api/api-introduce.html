@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    {{ ckeditor.load_code_theme() }}
+    {% if request.cookies.get('blog_theme', 'light') == 'light' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename = 'css/docoo.css') }}" >
+    {% else %}
+        <link rel="stylesheet" href="{{ url_for('static', filename = 'css/monokai.css') }}" >
+    {% endif %}
+    <link type="text/css" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@22.0.0/build/ckeditor.min.js"></script>
+    <style>
+        .fixed-div-right {
+            position: fixed;
+            top: 6.5em;
+            right: 0em;
+            margin: 5px;
+            padding: 10px;
+            border: #eeccdd 1px solid;
+            border-radius: 5px;
+            width: 12em;
+            background: white;
+        }
+    </style>
+
+{% endblock %}
+{% block title %}
+    个人网站API介绍
+{% endblock %}
+{% block content %}
+    <main>
+        <div class="history-fixed-div">
+            <h4><b>目录</b></h4>
+            <ul>
+                <li><a class="text-info-a" href="#soul">毒鸡汤</a></li>
+                <li><a class="text-info-a" href="#poemTang">唐宋诗</a></li>
+                <li><a class="text-info-a" href="#poemSong">宋词</a></li>
+            </ul>
+        </div>
+        <br>
+        <div class="container">
+            <br>
+            <h4 class="text-center"><b>网站API使用介绍</b></h4>
+            <hr>
+            <div class=" blog-content-div">
+                <article>
+                    {{ blog.content|safe }}
+                </article>
+            </div>
+        </div>
+    </main>
+{% endblock %}
